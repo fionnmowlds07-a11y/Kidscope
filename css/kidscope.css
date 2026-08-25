@@ -276,11 +276,14 @@ a:hover { color: var(--brand-deeper); }
 .page-head-photo .crumb a { color: #fff; }
 .page-head-photo h1 { color: #fff; }
 .page-head-photo .lede { color: rgba(255,255,255,.92); }
+.page-head-photo .jump a { color: #fff; }
+.page-head-photo .jump .sep { color: rgba(255,255,255,.6); }
 
 .page-head--what-we-do { --page-head-photo: url("../img/hero-what-we-do.jpg"); background-position: center 20%; }
 .page-head--referrals  { --page-head-photo: url("../img/hero-referrals.jpg"); background-position: center 22%; }
 .page-head--research   { --page-head-photo: url("../img/hero-research.jpg"); background-position: center 32%; }
 .page-head--contact    { --page-head-photo: url("../img/hero-contact.jpg"); background-position: center 22%; }
+.page-head--resources  { --page-head-photo: url("../img/hero-resources.jpg"); background-position: center 28%; }
 
 /* --- cards ------------------------------------------------------------- */
 .grid { display: grid; gap: 1.15rem; }
