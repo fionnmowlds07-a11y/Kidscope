@@ -728,7 +728,8 @@ html.a11y-reduce-motion *::after {
    Accessibility toolbar (js/accessibility.js)
    A floating, page-persistent control for the things prefers-* media
    queries can't cover on their own: a dyslexia-friendly typeface, a
-   contrast boost, font scaling, and an explicit motion override. Built on
+   contrast boost, font scaling, a colour-blind friendly palette, and an
+   explicit motion override. Built on
    the same <details>/<summary> disclosure pattern as the header menu
    (.nav-details above), so it is keyboard-operable with no extra ARIA.
    ========================================================================== */
@@ -846,6 +847,27 @@ html[data-a11y-font-step="1"] { font-size: 110%; }
 html[data-a11y-font-step="2"] { font-size: 120%; }
 html[data-a11y-font-step="3"] { font-size: 132%; }
 
+/* --- colour-blind friendly palette (single toggle) -----------------------
+   Same custom-property idiom as high contrast below, but tuned for hue
+   rather than luminance: --brand-deep, --brand-deeper and --focus move to
+   darker values in the same blue/vermillion families used by the
+   Okabe-Ito colour-blind-safe palette (a peer-reviewed set chosen to stay
+   distinguishable under protanopia, deuteranopia and tritanopia alike),
+   each re-checked against --ground and white text (7.22:1 / 7.57:1 for
+   the new --brand-deep, 5.14:1 / 5.39:1 for --focus - both above the
+   4.5:1 AA floor this site holds everywhere else). It also forces link
+   underlines sitewide (below, bundled into the shared rule with
+   .a11y-contrast) so links are never identified by hue alone.
+   Declared before .a11y-contrast so that if a visitor turns both on,
+   contrast's near-black values win on the shared properties - the
+   black/white axis is unaffected by any form of colour blindness, so
+   that's the safer result regardless of which type a visitor has. */
+:root.a11y-colorblind {
+  --brand-deep: #00588c;
+  --brand-deeper: #003d5b;
+  --focus: #b34a00;
+}
+
 /* --- high contrast (single toggle - see README) --------------------------
    Every colour on this site is already a custom property, so redefining
    them at :root.a11y-contrast strengthens borders, links and text
@@ -870,7 +892,13 @@ html[data-a11y-font-step="3"] { font-size: 132%; }
 .a11y-contrast .site-footer a,
 .a11y-contrast .crumb a,
 .a11y-contrast .phone-link,
-.a11y-contrast .jump a {
+.a11y-contrast .jump a,
+.a11y-colorblind .prose a,
+.a11y-colorblind .site-nav a,
+.a11y-colorblind .site-footer a,
+.a11y-colorblind .crumb a,
+.a11y-colorblind .phone-link,
+.a11y-colorblind .jump a {
   text-decoration: underline;
   text-decoration-thickness: .1em;
 }

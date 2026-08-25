@@ -1,9 +1,9 @@
 /* Accessibility toolbar: dyslexia-friendly typeface, a contrast boost,
-   font scaling, and an explicit "reduce motion" override on top of the
-   OS-level prefers-reduced-motion query. Preferences persist in
-   localStorage and are applied to <html> synchronously here, in <head>,
-   so a returning visitor never sees a flash of the un-adjusted page
-   before this runs.
+   font scaling, a colour-blind friendly palette, and an explicit
+   "reduce motion" override on top of the OS-level prefers-reduced-motion
+   query. Preferences persist in localStorage and are applied to <html>
+   synchronously here, in <head>, so a returning visitor never sees a
+   flash of the un-adjusted page before this runs.
 
    The panel is a <details>/<summary> disclosure, the same pattern as the
    header menu in js/nav.js - keyboard-operable natively, with the same
@@ -18,7 +18,7 @@
   var FONT_STEP_LABELS = ['Normal', 'Larger', 'Largest', 'Maximum'];
 
   function defaults() {
-    return { dyslexic: false, contrast: false, reduceMotion: false, fontStep: 0 };
+    return { dyslexic: false, contrast: false, colorblind: false, reduceMotion: false, fontStep: 0 };
   }
 
   function readPrefs() {
@@ -28,6 +28,7 @@
       return {
         dyslexic: !!parsed.dyslexic,
         contrast: !!parsed.contrast,
+        colorblind: !!parsed.colorblind,
         reduceMotion: !!parsed.reduceMotion,
         fontStep: Math.min(MAX_FONT_STEP, Math.max(0, parsed.fontStep | 0))
       };
@@ -46,6 +47,7 @@
     var html = document.documentElement;
     html.classList.toggle('a11y-dyslexic', prefs.dyslexic);
     html.classList.toggle('a11y-contrast', prefs.contrast);
+    html.classList.toggle('a11y-colorblind', prefs.colorblind);
     html.classList.toggle('a11y-reduce-motion', prefs.reduceMotion);
     html.setAttribute('data-a11y-font-step', String(prefs.fontStep));
   }
@@ -88,6 +90,12 @@
           '</button>' +
         '</div>' +
         '<div class="a11y-group">' +
+          '<span class="a11y-group-label">Colour vision</span>' +
+          '<button type="button" class="a11y-btn" id="a11y-colorblind" aria-pressed="false">' +
+            '<span>Colour-blind friendly mode</span><span class="tick" aria-hidden="true">✓</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="a11y-group">' +
           '<span class="a11y-group-label" id="a11y-fontsize-label">Text size</span>' +
           '<div class="a11y-steps" role="group" aria-labelledby="a11y-fontsize-label">' +
             '<button type="button" class="a11y-step-btn" id="a11y-font-down" aria-label="Decrease text size">A&minus;</button>' +
@@ -103,6 +111,7 @@
     var toggle = widget.querySelector('.a11y-toggle');
     var dyslexicBtn = widget.querySelector('#a11y-dyslexic');
     var contrastBtn = widget.querySelector('#a11y-contrast');
+    var colorblindBtn = widget.querySelector('#a11y-colorblind');
     var motionBtn = widget.querySelector('#a11y-motion');
     var fontDownBtn = widget.querySelector('#a11y-font-down');
     var fontUpBtn = widget.querySelector('#a11y-font-up');
@@ -112,6 +121,7 @@
     function syncControls() {
       dyslexicBtn.setAttribute('aria-pressed', String(prefs.dyslexic));
       contrastBtn.setAttribute('aria-pressed', String(prefs.contrast));
+      colorblindBtn.setAttribute('aria-pressed', String(prefs.colorblind));
       motionBtn.setAttribute('aria-pressed', String(prefs.reduceMotion));
       fontStatus.textContent = FONT_STEP_LABELS[prefs.fontStep];
       fontDownBtn.disabled = prefs.fontStep === 0;
@@ -125,6 +135,10 @@
     });
     contrastBtn.addEventListener('click', function () {
       prefs.contrast = !prefs.contrast;
+      commit(); syncControls();
+    });
+    colorblindBtn.addEventListener('click', function () {
+      prefs.colorblind = !prefs.colorblind;
       commit(); syncControls();
     });
     motionBtn.addEventListener('click', function () {
