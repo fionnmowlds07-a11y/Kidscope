@@ -22,6 +22,15 @@ var SEARCH_INDEX = [
   { title: "Resources for families", url: "resources.html",
     hint: "Support on therapy, sleep, ADHD and more.",
     keywords: ["resources", "families", "support", "help", "links"] },
+  { title: "Toilet Training resources", url: "resources.html#toilet-training",
+    hint: "Guides, charts and information sheets on toilet training and constipation.",
+    keywords: ["toilet", "toileting", "potty", "constipation", "bedwetting", "bladder", "bowel"] },
+  { title: "Sleep resources", url: "resources.html#sleep",
+    hint: "Bedtime routines, sleep strategies and relaxation tips.",
+    keywords: ["sleep", "bedtime", "routine", "night", "relaxation"] },
+  { title: "Food and Nutrition resources", url: "resources.html#food-and-nutrition",
+    hint: "Healthy eating, lunchboxes and tackling fussy eating.",
+    keywords: ["food", "nutrition", "eating", "lunchbox", "fussy eating", "diet"] },
   { title: "Occupational Therapy resources", url: "resources.html#occupational-therapy",
     hint: "Sensory processing information and OT videos.",
     keywords: ["occupational therapy", "ot", "sensory"] },
@@ -29,8 +38,8 @@ var SEARCH_INDEX = [
     hint: "Help with talking, language delay and communication.",
     keywords: ["speech", "language", "talking", "talk", "communication", "hanen"] },
   { title: "Healthy Habits and Lifestyle resources", url: "resources.html#healthy-habits",
-    hint: "Building healthier habits, food, nutrition and toilet training.",
-    keywords: ["healthy habits", "lifestyle", "nutrition", "food", "toilet", "toileting", "constipation"] },
+    hint: "Building healthier habits and general parenting resources.",
+    keywords: ["healthy habits", "lifestyle", "parenting", "enable ireland"] },
   { title: "ADHD resources", url: "resources.html#adhd",
     hint: "Information on ADHD.",
     keywords: ["adhd", "attention", "hyperactivity"] },
@@ -44,8 +53,8 @@ var SEARCH_INDEX = [
     hint: "The Kidscope catchment area map and related services.",
     keywords: ["services", "map", "catchment area", "google maps"] },
   { title: "Other information", url: "resources.html#other-information",
-    hint: "Sleep resources and a guide to hospital admission.",
-    keywords: ["sleep", "hospital", "admission", "other"] }
+    hint: "A guide to hospital admission and other family information.",
+    keywords: ["hospital", "admission", "other", "citizens information", "milestones"] }
 ];
 
 (function () {
