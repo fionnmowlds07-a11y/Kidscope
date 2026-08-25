@@ -425,6 +425,26 @@ a.res-item .ext { flex: 0 0 auto; width: 16px; height: 16px; color: var(--ink-so
 }
 @media (prefers-reduced-motion: reduce) { a.res-item { transition: none; } }
 
+/* Categories with a long list of PDFs collapse behind a dropdown so the
+   page doesn't open on a wall of links. Same native <details>/<summary>
+   disclosure as the header menu (.nav-details) - no extra ARIA needed. */
+.res-dropdown { margin-top: 1.15rem; }
+.res-dropdown > .res-list { margin-top: 1.15rem; }
+.res-toggle {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font: inherit; font-weight: 600; font-size: .95rem;
+  color: var(--brand-deep); background: var(--brand-tint);
+  border: 1px solid var(--brand-tint-2); border-radius: var(--radius-sm);
+  padding: .55rem 1rem; cursor: pointer;
+  list-style: none;
+}
+.res-toggle::-webkit-details-marker { display: none; }
+.res-toggle:hover { background: var(--brand-tint-2); }
+.res-toggle .chevron { width: 18px; height: 18px; flex: 0 0 auto; transition: transform .15s ease; }
+.res-dropdown[open] .res-toggle { background: var(--brand-tint-2); border-color: var(--brand); }
+.res-dropdown[open] .res-toggle .chevron { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .res-toggle .chevron { transition: none; } }
+
 /* Jump nav on the resources page - plain underlined links, dot-separated,
    rather than pill buttons. The separator is a visually-hidden-from-AT span
    between the <a> elements, since screen readers already pause between
@@ -591,6 +611,7 @@ a.partner-tile:hover, a.partner-tile:focus-visible {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 .nav-details[open] > .site-nav,
+.res-dropdown[open] > .res-list,
 #search-results:not([hidden]) {
   animation: kc-pop-in var(--dur-base) var(--ease-out);
 }
@@ -598,15 +619,15 @@ a.partner-tile:hover, a.partner-tile:focus-visible {
 /* --- refined hover / press feedback -------------------------------------- */
 a.link-card:active { transform: translateY(-1px) scale(.985); }
 a.partner-tile:active, a.res-item:active { transform: scale(.98); }
-.nav-toggle, .a11y-toggle {
+.nav-toggle, .a11y-toggle, .res-toggle {
   transition: background var(--dur-fast) var(--ease-out),
               border-color var(--dur-fast) var(--ease-out),
               transform var(--dur-fast) var(--ease-out);
 }
-.nav-toggle:active, .a11y-toggle:active { transform: scale(.96); }
+.nav-toggle:active, .a11y-toggle:active, .res-toggle:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) {
   a.link-card:active, a.partner-tile:active, a.res-item:active,
-  .nav-toggle:active, .a11y-toggle:active { transform: none; }
+  .nav-toggle:active, .a11y-toggle:active, .res-toggle:active { transform: none; }
 }
 
 /* --- scroll-reveal (progressive enhancement via js/motion.js) -----------
