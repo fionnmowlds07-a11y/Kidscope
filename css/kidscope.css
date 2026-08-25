@@ -518,3 +518,320 @@ a.partner-tile:hover, a.partner-tile:focus-visible {
   white-space: nowrap; border: 0;
 }
 .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* ==========================================================================
+   Motion system
+   Adds deliberate easing and entrance/hover/press feedback on top of the
+   transitions already defined above (link-card, partner-tile, res-item).
+   Opt-out at three layers: the OS prefers-reduced-motion query, the
+   in-page "Reduce motion" toggle in the accessibility toolbar below
+   (html.a11y-reduce-motion), and - for cross-page view transitions
+   specifically, since Chrome does not reliably honour reduced-motion for
+   those via the media query alone - a dedicated pseudo-element kill switch.
+   ========================================================================== */
+:root {
+  --ease-out:    cubic-bezier(.16, 1, .3, 1);
+  --dur-fast: .15s;
+  --dur-base: .22s;
+  --dur-slow: .38s;
+}
+
+/* Native cross-document view transitions - one at-rule turns every link
+   click into a soft cross-fade instead of a hard cut. Supporting browsers
+   only; every other browser ignores the at-rule and navigates as it does
+   today, so this is pure progressive enhancement. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+/* Header and footer are pixel-identical across all six pages - naming them
+   lets the browser morph the same persistent element instead of
+   cross-fading two separate snapshots, which reads as a flicker on a
+   sticky header. */
+.site-header { view-transition-name: site-header; }
+.site-footer { view-transition-name: site-footer; }
+
+/* --- entrance animation for the two header dropdowns --------------------
+   Opening only. Reliably animating the *closing* direction would mean
+   fighting the browser's own display:none handling for both <details>
+   and [hidden] (Chrome in particular slots <details> content behind its
+   own internal ::details-content visibility, ahead of any authored
+   `display` transition) for a payoff most visitors would never notice.
+   Instant close matches how most native OS dropdowns already behave. */
+@keyframes kc-pop-in {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.nav-details[open] > .site-nav,
+#search-results:not([hidden]) {
+  animation: kc-pop-in var(--dur-base) var(--ease-out);
+}
+
+/* --- refined hover / press feedback -------------------------------------- */
+a.link-card:active { transform: translateY(-1px) scale(.985); }
+a.partner-tile:active, a.res-item:active { transform: scale(.98); }
+.nav-toggle, .a11y-toggle {
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+.nav-toggle:active, .a11y-toggle:active { transform: scale(.96); }
+@media (prefers-reduced-motion: reduce) {
+  a.link-card:active, a.partner-tile:active, a.res-item:active,
+  .nav-toggle:active, .a11y-toggle:active { transform: none; }
+}
+
+/* --- scroll-reveal (progressive enhancement via js/motion.js) -----------
+   motion.js only ever adds .reveal to an element when JS has run AND the
+   visitor has not asked for reduced motion, so a no-JS or reduced-motion
+   visitor never sees anything but the plain, always-visible layout below. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity var(--dur-slow) var(--ease-out),
+              transform var(--dur-slow) var(--ease-out);
+  transition-delay: calc(var(--reveal-i, 0) * 60ms);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+/* Printing (or a browser Find landing on an off-screen match) must never
+   hide real content behind an animation that only fires on scroll. */
+@media print {
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+
+/* --- header elevation on scroll (js/motion.js) --------------------------- */
+.site-header { transition: box-shadow var(--dur-base) var(--ease-out); }
+.site-header.is-scrolled { box-shadow: var(--shadow); }
+
+/* --- reduced motion, sitewide kill switch --------------------------------
+   Covers both the OS-level query and the in-page toolbar toggle in one
+   place, for every animation added above. Durations go near-zero rather
+   than to `none` so transitionend/animationend still fire - motion.js and
+   the skeleton loaders below rely on those events to clean up state. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: .001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ==========================================================================
+   Skeleton loading states
+   Used only where something genuinely loads asynchronously after the page
+   has painted: the lazy-loaded partner logos on the home page, and the
+   embedded Google catchment-area map on the referrals page. Not used for
+   the page itself, which has nothing worth simulating a wait for.
+   ========================================================================== */
+@keyframes kc-shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+.partner-tile { position: relative; }
+.partner-tile::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--brand-tint) 30%, var(--brand-tint-2) 50%, var(--brand-tint) 70%);
+  background-size: 300% 100%;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.partner-tile.is-loading::after {
+  opacity: 1;
+  animation: kc-shimmer 1.4s ease-in-out infinite;
+}
+.partner-tile.is-loading img { opacity: 0; }
+.partner-tile img { transition: opacity var(--dur-base) var(--ease-out); }
+@media (prefers-reduced-motion: reduce) {
+  .partner-tile.is-loading::after { animation: none; background: var(--brand-tint); }
+}
+
+.map-frame { position: relative; }
+.map-frame::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--brand-tint) 30%, var(--brand-tint-2) 50%, var(--brand-tint) 70%);
+  background-size: 300% 100%;
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.map-frame.is-loading::after {
+  opacity: 1;
+  animation: kc-shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .map-frame.is-loading::after { animation: none; background: var(--brand-tint); }
+}
+
+/* ==========================================================================
+   Accessibility toolbar (js/accessibility.js)
+   A floating, page-persistent control for the things prefers-* media
+   queries can't cover on their own: a dyslexia-friendly typeface, a
+   contrast boost, font scaling, and an explicit motion override. Built on
+   the same <details>/<summary> disclosure pattern as the header menu
+   (.nav-details above), so it is keyboard-operable with no extra ARIA.
+   ========================================================================== */
+.a11y-widget {
+  position: fixed;
+  right: 1rem;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 80;
+}
+.a11y-toggle {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font: inherit; font-weight: 600; font-size: .9rem;
+  color: #fff; background: var(--brand-deep);
+  border: 1px solid var(--brand-deeper);
+  border-radius: 999px;
+  padding: .7rem 1.1rem .7rem .85rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-lift);
+  list-style: none;
+}
+.a11y-toggle::-webkit-details-marker { display: none; }
+.a11y-toggle:hover { background: var(--brand-deeper); }
+.a11y-toggle svg { width: 20px; height: 20px; flex: 0 0 auto; }
+.a11y-widget[open] .a11y-toggle { background: var(--brand-deeper); }
+
+.a11y-panel {
+  position: absolute; right: 0; bottom: calc(100% + 10px);
+  width: min(300px, calc(100vw - 2rem));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+  padding: 1.1rem;
+}
+.a11y-panel h2 { font-size: .95rem; margin-bottom: .9rem; }
+.a11y-group { margin-bottom: 1rem; }
+.a11y-group:last-of-type { margin-bottom: 0; }
+.a11y-group-label {
+  display: block; font-size: .8rem; font-weight: 600;
+  color: var(--ink-soft); text-transform: uppercase; letter-spacing: .03em;
+  margin-bottom: .5rem;
+}
+.a11y-btn {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .6rem; width: 100%;
+  font: inherit; font-size: .93rem; font-weight: 500;
+  color: var(--ink); background: var(--ground);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: .7rem .9rem;
+  cursor: pointer; text-align: left;
+}
+.a11y-btn + .a11y-btn { margin-top: .5rem; }
+.a11y-btn:hover { border-color: var(--brand); }
+.a11y-btn[aria-pressed="true"] {
+  background: var(--brand-tint); border-color: var(--brand);
+  color: var(--brand-deep); font-weight: 600;
+}
+.a11y-btn .tick { opacity: 0; }
+.a11y-btn[aria-pressed="true"] .tick { opacity: 1; }
+
+.a11y-steps { display: flex; align-items: center; gap: .5rem; }
+.a11y-step-btn {
+  flex: 0 0 auto;
+  width: 2.4rem; height: 2.4rem;
+  display: grid; place-items: center;
+  font: inherit; font-weight: 700; font-size: 1rem;
+  color: var(--brand-deep); background: var(--ground);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.a11y-step-btn:hover:not(:disabled) { border-color: var(--brand); background: var(--brand-tint); }
+.a11y-step-btn:disabled { opacity: .4; cursor: not-allowed; }
+.a11y-step-status { flex: 1 1 auto; text-align: center; font-size: .85rem; color: var(--ink-soft); }
+.a11y-reset {
+  display: block; width: 100%; margin-top: 1rem;
+  font: inherit; font-size: .85rem; font-weight: 600;
+  color: var(--ink-soft); background: none;
+  border: 0; border-top: 1px solid var(--line);
+  padding-top: .8rem; cursor: pointer; text-align: center;
+}
+.a11y-reset:hover { color: var(--brand-deep); }
+
+/* --- dyslexia-friendly typeface (toolbar toggle) -------------------------
+   OpenDyslexic, served from Fontsource's jsDelivr CDN (no build step, same
+   pattern as the Google Fonts <link> already in <head> - see README).
+   Falls back through Comic Sans - genuinely useful here, its asymmetric
+   letterforms are one of the few system-font traits shown to help some
+   dyslexic readers - before the site's normal Lexend stack, in case the
+   CDN file is blocked. */
+@font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/fontsource/fonts/opendyslexic@5.3.0/latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'OpenDyslexic';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/fontsource/fonts/opendyslexic@5.3.0/latin-700-normal.woff2') format('woff2');
+}
+:root {
+  --font-dyslexic: 'OpenDyslexic', 'Comic Sans MS', 'Comic Sans', var(--font);
+}
+html.a11y-dyslexic body { font-family: var(--font-dyslexic); }
+
+/* --- font size steps (toolbar A-/A+) -------------------------------------
+   Scales html's root font-size, so every rem-based measurement on the
+   page (body copy, the clamp()'d headings, spacing) scales with it. */
+html[data-a11y-font-step="1"] { font-size: 110%; }
+html[data-a11y-font-step="2"] { font-size: 120%; }
+html[data-a11y-font-step="3"] { font-size: 132%; }
+
+/* --- high contrast (single toggle - see README) --------------------------
+   Every colour on this site is already a custom property, so redefining
+   them at :root.a11y-contrast strengthens borders, links and text
+   sitewide in one place rather than needing per-component overrides.
+   This only ever *increases* contrast from the already-verified baseline
+   (see README "Accessibility checks performed") - there is deliberately
+   no "low contrast" direction, which would undermine that guarantee. */
+:root.a11y-contrast {
+  --ink: #000000;
+  --ink-soft: #1a1a1a;
+  --line: #000000;
+  --brand-tint-2: #000000;
+  --brand-deep: #0d3a54;
+  --brand-deeper: #081f2d;
+  --shadow: none;
+  --shadow-lift: 0 0 0 2px #000;
+  --focus: #000000;
+}
+:root.a11y-contrast :focus-visible { outline-width: 4px; }
+.a11y-contrast .prose a,
+.a11y-contrast .site-nav a,
+.a11y-contrast .site-footer a,
+.a11y-contrast .crumb a,
+.a11y-contrast .phone-link,
+.a11y-contrast .jump a {
+  text-decoration: underline;
+  text-decoration-thickness: .1em;
+}
+.a11y-contrast .notice { border-color: #000; background: #fff; }
+.a11y-contrast .notice strong, .a11y-contrast .notice p, .a11y-contrast .notice svg { color: #000; }

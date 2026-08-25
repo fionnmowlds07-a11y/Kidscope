@@ -13,7 +13,7 @@ Static site (plain HTML/CSS/JS, no build step). Deploys as-is to Vercel, Netlify
 | `referrals.html` | Being referred to Kidscope |
 | `resources.html` | Resources for families |
 
-Shared: `css/kidscope.css`, `js/nav.js`, `img/`.
+Shared: `css/kidscope.css`, `js/nav.js`, `js/accessibility.js`, `js/motion.js`, `img/`.
 
 ## Running it locally
 
@@ -33,6 +33,10 @@ Do not use `--brand` for body-size text — that is the one rule that keeps the 
 
 **Focus.** A warm `#B4530A` ring on light surfaces, switching to white on blue-filled surfaces (the warm ring measures only 1.46:1 against the brand blue, so it would vanish there).
 
+**Motion.** `js/motion.js` adds a header elevation cue, a reveal-on-scroll effect for card and list groups, and skeleton shimmer states for the two things on the site that genuinely load asynchronously (the lazy-loaded partner logos, the embedded Google map). `css/kidscope.css` adds cross-document view transitions (`@view-transition { navigation: auto }`) for a soft cross-fade between pages, entrance animations for the two header dropdowns, and refined hover/press easing. All of it is layered opt-out: the OS `prefers-reduced-motion` query, and the accessibility toolbar's own "Reduce motion" toggle for visitors whose OS default doesn't match what they want on this site. Reveal-on-scroll is JS-only (a no-JS visitor sees the plain, always-visible layout) and is forced visible under `@media print`.
+
+**Accessibility toolbar.** `js/accessibility.js` injects a floating widget (bottom-right, every page) offering a dyslexia-friendly typeface, a contrast boost, font-size steps, and the reduce-motion override above. It's a single **high-contrast toggle**, not a low/high pair — deliberately, since a "low contrast" direction would work against the zero-failure baseline recorded below. Preferences persist in `localStorage` (key `kidscope-a11y`, read/write both wrapped in `try/catch` for blocked storage) and are applied to `<html>` synchronously in `<head>`, before `<body>` exists, so there's no flash of un-adjusted styles on a returning visit.
+
 ## Assets
 
 - `img/kidscope-logo.png` (249×81) has a real alpha channel (RGBA). The header and footer logo areas stay white by choice, for legibility, not because the PNG forces it. Displayed at 180px max; going larger makes it look soft.
@@ -40,6 +44,7 @@ Do not use `--brand` for body-size text — that is the one rule that keeps the 
 - `img/hse logo.jpg`, `img/UCC logo.png`, `img/lets grow together.jpg`, `img/Tomar trust.jpg`, `img/niche health project.jpg`, `img/springboard logo.jpg` are the six partner logos as separate files, each an opaque white-background image (none carry transparency). They're laid out as individually linked tiles (`.partner-grid` on the home page) rather than one flat strip.
 - `img/partners.png` (635×65, the old flat six-logo strip) is **no longer referenced** anywhere, superseded by the files above. Left on disk rather than deleted.
 - `img/favicon.svg` and `img/apple-touch-icon.png` were created for this site. The supplied logo is a 3:1 strip and would be unreadable squashed into a 16px square, so the mark is a blue tile with a white "K".
+- **OpenDyslexic** (the accessibility toolbar's dyslexia-friendly typeface) is loaded from Fontsource's jsDelivr CDN, not self-hosted — same "no build step" reasoning as the Google Fonts `<link>` for Lexend. `@font-face` is declared unconditionally in `css/kidscope.css`, but the font is only ever fetched if a visitor actually turns the toggle on (browsers don't download a declared `@font-face` until something on the page matches it). If jsDelivr is ever blocked or unreachable, the toggle still does something visible via the `'Comic Sans MS'` fallback in `--font-dyslexic` rather than silently doing nothing.
 
 ## Adding publications
 
@@ -82,3 +87,5 @@ Verified in-browser across all six pages:
 - Mobile menu opens and closes, responds to Escape, and returns focus to its button.
 - Keyboard tab order starts at the skip link, then the logo, then the nav. No positive `tabindex` anywhere.
 - All 24 resource links open in a new tab with `rel="noopener noreferrer"` and carry a screen-reader "opens in a new tab" note.
+- Accessibility toolbar (`js/accessibility.js`) is keyboard-operable via the same native `<details>`/`<summary>` pattern as the header menu (Escape closes it and returns focus to the toggle; outside click closes it). Every control is a real `<button aria-pressed>`, not a styled `<div>`. Font-size steps scale `html`'s root font-size, so the existing 68ch measure and 1.65 line-height scale proportionally rather than just growing the text in place.
+- All new motion (scroll-reveal, dropdown entrances, view transitions) is gated behind `prefers-reduced-motion` and the toolbar's own "Reduce motion" toggle; verified both directions in-browser rather than just reading the media query back.
