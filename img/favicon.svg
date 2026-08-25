@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Kidscope">
+  <!-- Square mark for the browser tab. The supplied wordmark logo is a 3:1
+       strip and would be squashed unreadably at 16px, so the K stands alone.
+       Ground is --brand-deep so the white K clears contrast at small sizes. -->
+  <rect width="64" height="64" rx="13" fill="#1f5c82"/>
+  <g stroke="#ffffff" stroke-width="8.5" stroke-linecap="round" fill="none">
+    <path d="M21 16 V48"/>
+    <path d="M25.5 32.5 L43 17"/>
+    <path d="M25.5 32.5 L44 48"/>
+  </g>
+</svg>

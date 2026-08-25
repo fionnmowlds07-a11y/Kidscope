@@ -1,0 +1,520 @@
+/* ==========================================================================
+   Kidscope Paediatric Clinic
+   Palette derived from the supplied logo (#4E91BD sampled from the wordmark).
+   The brand blue measures 3.44:1 on white, so it is reserved for decoration
+   and large headings; --brand-deep carries all text and filled surfaces.
+   ========================================================================== */
+
+:root {
+  --brand:         #4e91bd;  /* sampled from logo. Decorative / >=24px only  */
+  --brand-deep:    #1f5c82;  /* 6.88:1 on ground, 7.21:1 white-on-it         */
+  --brand-deeper:  #17496a;  /* hover states, footer ground                  */
+  --brand-tint:    #eaf3f8;  /* card washes                                  */
+  --brand-tint-2:  #d7e8f2;  /* borders on tinted surfaces                   */
+
+  --ink:           #1c2b36;  /* 13.83:1 on ground                            */
+  --ink-soft:      #46586a;  /* secondary text, still ~7:1 on ground          */
+  --ground:        #f7fafc;  /* off-white page ground, not pure white        */
+  --surface:       #ffffff;
+  --line:          #dde6ed;
+
+  --focus:         #b4530a;  /* 4.79:1 on ground - warm so it reads on blue  */
+  --focus-on-dark: #ffffff;  /* for anything on a filled blue surface        */
+
+  /* Fallback before header.js measures the real height; overwritten as a
+     custom property on the root so :target scroll offsets clear the sticky
+     header even when it wraps to two rows on narrow screens. */
+  --header-h: 132px;
+
+  --radius:      20px;
+  --radius-sm:   12px;
+  --measure:     68ch;
+  --shadow:      0 1px 2px rgba(28, 43, 54, .04), 0 8px 24px rgba(28, 43, 54, .06);
+  --shadow-lift: 0 2px 4px rgba(28, 43, 54, .06), 0 16px 40px rgba(28, 43, 54, .10);
+
+  --font: "Lexend", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+          Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* --- reset ------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body, h1, h2, h3, h4, p, ul, ol, li, figure, blockquote { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, svg { max-width: 100%; display: block; }
+
+body {
+  font-family: var(--font);
+  font-size: 1.0625rem;           /* 17px base - a touch larger for reading ease */
+  line-height: 1.65;              /* dyslexia-friendly leading                   */
+  color: var(--ink);
+  background: var(--ground);
+  text-align: left;               /* never justified                             */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- focus ------------------------------------------------------------- */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.site-footer :focus-visible,
+.hero :focus-visible,
+.on-brand :focus-visible { outline-color: var(--focus-on-dark); }
+
+.skip-link {
+  position: absolute; left: 8px; top: -60px;
+  z-index: 100;
+  background: var(--brand-deep); color: #fff;
+  padding: .7rem 1.2rem; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  font-weight: 600; text-decoration: none;
+  transition: top .15s ease;
+}
+.skip-link:focus { top: 0; }
+/* Reduced-motion users get the skip link immediately rather than sliding it in -
+   it is the first thing a keyboard user hits, so it must never lag. */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link { transition: none; }
+}
+
+/* --- layout ------------------------------------------------------------ */
+.wrap { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+.prose { max-width: var(--measure); }
+.prose p + p { margin-top: 1.1em; }
+.section { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+.section + .section { padding-top: 0; }
+
+/* --- typography -------------------------------------------------------- */
+h1, h2, h3 { line-height: 1.25; font-weight: 600; letter-spacing: -.015em; color: var(--ink); }
+h1 { font-size: clamp(2rem, 5vw, 2.9rem); }
+h2 { font-size: clamp(1.5rem, 3.2vw, 2rem); }
+h3 { font-size: 1.2rem; font-weight: 600; }
+.lede { font-size: clamp(1.1rem, 2.2vw, 1.3rem); color: var(--ink-soft); line-height: 1.55; }
+
+/* Section headings get a brand rule. Colour is decorative, not carrying text. */
+.rule-head { position: relative; padding-top: 1.15rem; margin-bottom: 1.25rem; }
+.rule-head::before {
+  content: ""; position: absolute; top: 0; left: 0;
+  width: 56px; height: 5px; border-radius: 3px; background: var(--brand);
+}
+
+a { color: var(--brand-deep); text-underline-offset: .18em; text-decoration-thickness: .09em; }
+a:hover { color: var(--brand-deeper); }
+
+/* --- header ------------------------------------------------------------ */
+/* The Kidscope logo PNG carries a real alpha channel, so the header no
+   longer *needs* a white ground - it stays white for legibility of the
+   search field and menu button, not to hide a baked-in logo background. */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 50;
+}
+.header-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "brand nav" "search search";
+  align-items: center;
+  row-gap: .6rem; column-gap: 1rem;
+  padding-block: .65rem;
+  min-height: 78px;
+}
+.brand-link { grid-area: brand; display: inline-flex; flex: 0 0 auto; border-radius: 6px; }
+/* Native width is 249px; capping at 180 keeps it crisp on 2x screens. */
+.brand-link img { width: 180px; height: auto; }
+
+@media (min-width: 700px) {
+  .header-inner {
+    grid-template-columns: auto minmax(200px, 1fr) auto;
+    grid-template-areas: "brand search nav";
+    column-gap: 1.5rem;
+  }
+}
+
+/* --- header search ------------------------------------------------------ */
+.header-search { grid-area: search; position: relative; }
+.search-input {
+  display: block; width: 100%;
+  font: inherit; font-size: .95rem;
+  padding: .62rem 1rem;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--ground); color: var(--ink);
+}
+.search-input::placeholder { color: var(--ink-soft); }
+.search-input:focus-visible { background: var(--surface); outline-color: var(--brand-deep); }
+.search-results {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lift);
+  max-height: 60vh; overflow-y: auto;
+  padding: .3rem;
+  z-index: 60;
+}
+.search-results[hidden] { display: none; }
+.search-result {
+  display: block;
+  padding: .65rem .8rem;
+  border-radius: var(--radius-sm);
+  text-decoration: none; color: inherit;
+}
+.search-result:hover,
+.search-result[aria-selected="true"] { background: var(--brand-tint); }
+.search-result .sr-title { display: block; font-weight: 600; color: var(--brand-deep); }
+.search-result .sr-hint { display: block; font-size: .85rem; color: var(--ink-soft); margin-top: .1rem; }
+.search-empty { display: block; padding: .7rem .8rem; font-size: .9rem; color: var(--ink-soft); }
+
+/* --- header menu (hamburger) -------------------------------------------- */
+.nav-details { grid-area: nav; justify-self: end; position: relative; }
+.nav-toggle {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font: inherit; font-weight: 600; font-size: .95rem;
+  color: var(--brand-deep); background: var(--brand-tint);
+  border: 1px solid var(--brand-tint-2); border-radius: var(--radius-sm);
+  padding: .55rem 1rem; cursor: pointer;
+  list-style: none;
+}
+.nav-toggle::-webkit-details-marker { display: none; }
+.nav-toggle:hover { background: var(--brand-tint-2); }
+.nav-toggle svg { width: 18px; height: 18px; flex: 0 0 auto; transition: transform .15s ease; }
+.nav-details[open] .nav-toggle { background: var(--brand-tint-2); border-color: var(--brand); }
+.nav-details[open] .nav-toggle svg { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .nav-toggle svg { transition: none; } }
+
+.site-nav {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 2rem));
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+  padding: .4rem;
+  z-index: 60;
+}
+.site-nav ul { display: grid; gap: .1rem; }
+.site-nav a {
+  display: block;
+  padding: .8rem .9rem;
+  border-radius: var(--radius-sm);
+  font-size: .98rem; font-weight: 500;
+  color: var(--ink); text-decoration: none;
+}
+.site-nav a:hover { background: var(--brand-tint); color: var(--brand-deep); }
+.site-nav a[aria-current="page"] {
+  background: var(--brand-tint); color: var(--brand-deep); font-weight: 600;
+  border-left: 4px solid var(--brand-deep); padding-left: calc(.9rem - 4px);
+}
+
+/* --- hero -------------------------------------------------------------- */
+/* Photo of the Kidscope playroom, cropped (never stretched) via
+   background-size: cover. The gradient sits on top at ~90% opacity so the
+   white heading/lede/facts and the white focus ring keep the same verified
+   contrast they had against the flat gradient - the photo is a texture
+   under the brand colour, not a replacement for it. */
+.hero {
+  background:
+    linear-gradient(160deg, rgba(31, 92, 130, .90) 0%, rgba(23, 73, 106, .94) 100%),
+    url("../img/hero-classroom.jpg") center 35% / cover no-repeat;
+  color: #fff;
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+}
+.hero h1 { color: #fff; max-width: 20ch; }
+.hero .lede { color: rgba(255,255,255,.92); max-width: 56ch; margin-top: 1.1rem; }
+
+/* Plain-text facts, dash-separated, rather than pill/badge shapes. */
+.hero-badges {
+  display: flex; flex-wrap: wrap;
+  row-gap: .5rem;
+  margin-top: 1.8rem;
+  font-size: .97rem; font-weight: 500;
+}
+.badge { color: #fff; }
+.hero-badges li + li::before { content: "\2003\2014\2003"; color: rgba(255,255,255,.6); }
+
+/* Inner page header - lighter than the home hero */
+.page-head {
+  background: var(--brand-tint);
+  border-bottom: 1px solid var(--brand-tint-2);
+  padding-block: clamp(2.2rem, 5vw, 3.4rem);
+}
+.page-head .lede { margin-top: .85rem; }
+.crumb { font-size: .9rem; color: var(--ink-soft); margin-bottom: .5rem; }
+
+/* Photo variant of the inner page header, for pages with a supplied hero
+   photo - same gradient-over-photo treatment as the home .hero, scaled
+   down to page-head height. Photo is a texture under the brand colour,
+   never a replacement for it, so the gradient still carries contrast. */
+.page-head-photo {
+  background-image:
+    linear-gradient(160deg, rgba(31, 92, 130, .90) 0%, rgba(23, 73, 106, .94) 100%),
+    var(--page-head-photo);
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-bottom: 0;
+  color: #fff;
+}
+.page-head-photo .crumb { color: rgba(255,255,255,.75); }
+.page-head-photo .crumb a { color: #fff; }
+.page-head-photo h1 { color: #fff; }
+.page-head-photo .lede { color: rgba(255,255,255,.92); }
+
+.page-head--what-we-do { --page-head-photo: url("../img/hero-what-we-do.jpg"); background-position: center 20%; }
+.page-head--referrals  { --page-head-photo: url("../img/hero-referrals.jpg"); background-position: center 22%; }
+.page-head--research   { --page-head-photo: url("../img/hero-research.jpg"); background-position: center 32%; }
+.page-head--contact    { --page-head-photo: url("../img/hero-contact.jpg"); background-position: center 22%; }
+
+/* --- cards ------------------------------------------------------------- */
+.grid { display: grid; gap: 1.15rem; }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.card h3 { margin-bottom: .4rem; }
+.card p { color: var(--ink-soft); font-size: .97rem; }
+
+/* Quick-link cards on the home page */
+a.link-card {
+  display: flex; flex-direction: column;
+  text-decoration: none; color: inherit;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+a.link-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--brand);
+}
+a.link-card h3 { color: var(--brand-deep); }
+a.link-card .go { margin-top: auto; padding-top: 1rem; font-weight: 600; font-size: .95rem; color: var(--brand-deep); }
+a.link-card .go::after { content: " \2192"; }
+@media (prefers-reduced-motion: reduce) {
+  a.link-card, a.link-card:hover { transition: none; transform: none; }
+}
+
+/* --- aims list --------------------------------------------------------- */
+.aims { counter-reset: aim; display: grid; gap: 1rem; margin-top: 1.5rem; }
+.aims li {
+  counter-increment: aim;
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--brand);
+  border-radius: var(--radius-sm);
+  padding: 1.15rem 1.35rem 1.15rem 3.9rem;
+  box-shadow: var(--shadow);
+}
+.aims li::before {
+  content: counter(aim);
+  position: absolute; left: 1.25rem; top: 1.05rem;
+  width: 1.9rem; height: 1.9rem;
+  display: grid; place-items: center;
+  background: var(--brand-deep); color: #fff;
+  border-radius: 50%;
+  font-size: .95rem; font-weight: 600; line-height: 1;
+}
+
+/* --- team / involved --------------------------------------------------- */
+.team-list { display: grid; gap: .6rem; margin-top: 1.25rem; }
+.team-list li {
+  display: flex; gap: .75rem; align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: .85rem 1.1rem;
+}
+.team-list li::before {
+  content: ""; flex: 0 0 auto;
+  width: 9px; height: 9px; margin-top: .62rem;
+  border-radius: 50%; background: var(--brand);
+}
+
+/* --- callout ----------------------------------------------------------- */
+.callout {
+  border: 1px solid var(--brand-tint-2);
+  background: var(--brand-tint);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+}
+.callout h3 { color: var(--brand-deep); margin-bottom: .35rem; }
+
+/* The one emphasised warning in the brief - walk-ins are not accepted. */
+.notice {
+  border: 1px solid #e6c98f;
+  background: #fdf6e7;
+  border-left: 5px solid #b4530a;
+  border-radius: var(--radius-sm);
+  padding: 1.2rem 1.4rem;
+  display: flex; gap: .9rem; align-items: flex-start;
+}
+.notice svg { flex: 0 0 auto; width: 22px; height: 22px; color: #8a3f08; margin-top: .15rem; }
+.notice strong { color: #7a3806; }
+.notice p { color: #5c3410; }
+
+/* --- contact ----------------------------------------------------------- */
+.contact-rows { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.contact-row {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.5rem;
+  box-shadow: var(--shadow);
+}
+.contact-row .ico {
+  flex: 0 0 auto;
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  background: var(--brand-tint); color: var(--brand-deep);
+  border-radius: 50%;
+}
+.contact-row .ico svg { width: 21px; height: 21px; }
+.contact-row h3 { font-size: 1.05rem; margin-bottom: .15rem; }
+.contact-row address { font-style: normal; color: var(--ink-soft); }
+.phone-link { font-size: 1.25rem; font-weight: 600; display: inline-block; margin-top: .1rem; }
+
+/* --- resources --------------------------------------------------------- */
+.res-group + .res-group { margin-top: 2.5rem; }
+.res-list { display: grid; gap: .75rem; margin-top: 1.15rem; }
+a.res-item {
+  display: flex; align-items: flex-start; gap: .85rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.2rem;
+  text-decoration: none; color: var(--ink);
+  transition: border-color .15s ease, background .15s ease;
+}
+a.res-item:hover { border-color: var(--brand); background: var(--brand-tint); }
+a.res-item .res-txt { flex: 1 1 auto; }
+a.res-item .res-name { font-weight: 600; color: var(--brand-deep); }
+a.res-item .res-meta { display: block; font-size: .88rem; color: var(--ink-soft); margin-top: .1rem; }
+a.res-item .ext { flex: 0 0 auto; width: 16px; height: 16px; color: var(--ink-soft); margin-top: .28rem; }
+/* Plain text, not a pill - the em dash separator is written into the HTML
+   itself (not CSS generated content) so it reads consistently for screen
+   readers building the link's accessible name. */
+.tag {
+  font-size: .8rem; font-weight: 600; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+@media (prefers-reduced-motion: reduce) { a.res-item { transition: none; } }
+
+/* Jump nav on the resources page - plain underlined links, dot-separated,
+   rather than pill buttons. The separator is a visually-hidden-from-AT span
+   between the <a> elements, since screen readers already pause between
+   separate links without needing "dot" read out. */
+/* gap (not the separator's own text spacing) provides the horizontal
+   rhythm - a flex item's own leading/trailing whitespace collapses away
+   once it's blockified as a flex child, so spaces baked into the "sep"
+   text alone would not survive. */
+.jump { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem .4rem; margin-top: 1.5rem; }
+.jump a {
+  font-size: .92rem; font-weight: 500; text-decoration: underline;
+  text-underline-offset: .18em; text-decoration-thickness: .08em;
+  color: var(--brand-deep);
+}
+.jump a:hover { color: var(--brand-deeper); }
+.jump .sep { color: var(--ink-soft); }
+:target { scroll-margin-top: calc(var(--header-h) + 12px); }
+
+/* --- map --------------------------------------------------------------- */
+.map-frame {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  margin-top: 1.5rem;
+}
+.map-frame iframe { width: 100%; height: 460px; border: 0; display: block; }
+.map-fallback { font-size: .95rem; color: var(--ink-soft); margin-top: .8rem; }
+@media (max-width: 620px) { .map-frame iframe { height: 340px; } }
+
+/* --- publications empty state ------------------------------------------ */
+.empty-state {
+  background: var(--surface);
+  border: 2px dashed var(--brand-tint-2);
+  border-radius: var(--radius);
+  padding: clamp(2rem, 5vw, 3rem);
+}
+.empty-state .ico {
+  width: 52px; height: 52px; margin-bottom: 1rem;
+  display: grid; place-items: center;
+  background: var(--brand-tint); color: var(--brand-deep); border-radius: 50%;
+}
+.empty-state .ico svg { width: 26px; height: 26px; }
+
+/* --- partners ---------------------------------------------------------- */
+/* Six separate logo files (each an opaque white-background JPG/PNG - none
+   carry transparency), so each sits in its own white card and links out to
+   that partner's own site, instead of one flat unlinked strip. */
+.partners { background: var(--surface); border-top: 1px solid var(--line); }
+.partner-grid {
+  margin-top: 1.4rem;
+  display: grid; gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.partner-tile {
+  display: flex; align-items: center; justify-content: center;
+  height: 92px; padding: 1rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+a.partner-tile:hover, a.partner-tile:focus-visible {
+  transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--brand);
+}
+.partner-tile img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+/* Springboard has no confirmed URL yet, so it ships as a plain, non-clickable
+   tile - deliberately no hover affordance, so it doesn't look like a broken link. */
+.partner-tile--unlinked { cursor: default; }
+.partner-names { font-size: .92rem; color: var(--ink-soft); margin-top: 1.1rem; }
+@media (prefers-reduced-motion: reduce) { a.partner-tile, a.partner-tile:hover { transition: none; transform: none; } }
+
+/* --- footer ------------------------------------------------------------ */
+.site-footer { background: var(--brand-deeper); color: rgba(255,255,255,.86); margin-top: 3.5rem; }
+.footer-inner { padding-block: 2.75rem 2rem; display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.site-footer h2 { font-size: 1rem; color: #fff; margin-bottom: .7rem; letter-spacing: 0; }
+.site-footer a { color: #fff; }
+.site-footer ul { display: grid; gap: .4rem; }
+.site-footer li a { text-decoration: none; font-size: .96rem; color: rgba(255,255,255,.86); }
+.site-footer li a:hover { color: #fff; text-decoration: underline; }
+.site-footer address { font-style: normal; font-size: .96rem; line-height: 1.7; }
+/* Logo wordmark is brand blue, so it needs a light card behind it to stay
+   legible against the dark footer ground - unrelated to the PNG's alpha. */
+.footer-logo {
+  background: #fff; border-radius: var(--radius-sm);
+  padding: .8rem 1rem; display: inline-block; margin-bottom: 1rem;
+}
+.footer-logo img { width: 150px; height: auto; }
+.footer-base {
+  border-top: 1px solid rgba(255,255,255,.18);
+  padding-block: 1.15rem;
+  font-size: .89rem; color: rgba(255,255,255,.72);
+  display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; justify-content: space-between;
+}
+
+/* --- print ------------------------------------------------------------- */
+@media print {
+  .site-header, .site-nav, .nav-toggle, .jump, .skip-link { display: none !important; }
+  body { background: #fff; font-size: 11pt; }
+  .card, .res-item, .contact-row { box-shadow: none; break-inside: avoid; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #444; word-break: break-all; }
+}
+
+/* --- utilities --------------------------------------------------------- */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
