@@ -121,8 +121,8 @@ a:hover { color: var(--brand-deeper); }
   min-height: 78px;
 }
 .brand-link { grid-area: brand; display: inline-flex; flex: 0 0 auto; border-radius: 6px; }
-/* Native width is 249px; capping at 180 keeps it crisp on 2x screens. */
-.brand-link img { width: 180px; height: auto; }
+/* Native width is 249px; capping at 210 keeps it crisp on 2x screens. */
+.brand-link img { width: 210px; height: auto; }
 
 @media (min-width: 700px) {
   .header-inner {
@@ -130,6 +130,7 @@ a:hover { color: var(--brand-deeper); }
     grid-template-areas: "brand search nav";
     column-gap: 1.5rem;
   }
+  .brand-link img { width: 240px; }
 }
 
 /* --- header search ------------------------------------------------------ */
@@ -220,8 +221,11 @@ a:hover { color: var(--brand-deeper); }
   color: #fff;
   padding-block: clamp(3rem, 8vw, 5.5rem);
 }
+.hero-grid { display: grid; gap: 2.5rem; align-items: center; }
 .hero h1 { color: #fff; max-width: 20ch; }
 .hero .lede { color: rgba(255,255,255,.92); max-width: 56ch; margin-top: 1.1rem; }
+.hero-consultant { margin-top: 1rem; font-size: 1rem; font-weight: 500; color: rgba(255,255,255,.9); }
+.hero-consultant strong { color: #fff; font-weight: 600; }
 
 /* Plain-text facts, dash-separated, rather than pill/badge shapes. */
 .hero-badges {
@@ -232,6 +236,19 @@ a:hover { color: var(--brand-deeper); }
 }
 .badge { color: #fff; }
 .hero-badges li + li::before { content: "\2003\2014\2003"; color: rgba(255,255,255,.6); }
+
+/* Photo alongside the hero copy, once there is room beside it. A thicker
+   border plus a soft outward glow, layered on top of the normal drop
+   shadow, so the photo visibly separates from the brand-blue background. */
+.hero-media img {
+  width: 100%; height: auto;
+  border-radius: var(--radius);
+  border: 4px solid rgba(255,255,255,.75);
+  box-shadow: var(--shadow-lift), 0 0 40px rgba(255,255,255,.35);
+}
+@media (min-width: 860px) {
+  .hero-grid { grid-template-columns: 1.15fr 1fr; }
+}
 
 /* Inner page header - lighter than the home hero */
 .page-head {
