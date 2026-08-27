@@ -502,6 +502,189 @@ a.res-item .ext { flex: 0 0 auto; width: 16px; height: 16px; color: var(--ink-so
 .jump .sep { color: var(--ink-soft); }
 :target { scroll-margin-top: calc(var(--header-h) + 12px); }
 
+/* --- in-page PDF viewer (progressive enhancement, js/pdf-viewer.js) -----
+   A resource PDF opens over the page in the browser's own PDF reader
+   instead of a separate browser tab, so a parent keeps their place in a
+   long list and their way back is a Close button rather than the browser
+   chrome. All of it is built from the same tokens as the rest of the
+   site, so the high-contrast and colour-blind toggles reach inside the
+   viewer without needing overrides here.
+
+   z-index sits above the skip link (100), the header (50), its dropdowns
+   (60) and the accessibility widget (80) - the viewer covers everything. */
+.pdf-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0px, 2vw, 28px);
+}
+.pdf-viewer[hidden] { display: none; }
+
+.pdf-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 73, 106, .58);
+  animation: kc-fade-in var(--dur-fast) var(--ease-out);
+}
+
+.pdf-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1100px, 100%);
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+  overflow: hidden;
+  animation: kc-pop-in var(--dur-base) var(--ease-out);
+}
+
+.pdf-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .8rem 1rem;
+  background: var(--brand-tint);
+  border-bottom: 1px solid var(--brand-tint-2);
+}
+/* min-width:0 is what lets the title actually truncate rather than
+   pushing the buttons off the end of a narrow bar. */
+.pdf-titles { flex: 1 1 auto; min-width: 0; }
+.pdf-title,
+.pdf-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pdf-title { font-size: 1.02rem; font-weight: 600; line-height: 1.35; color: var(--brand-deep); }
+.pdf-meta { font-size: .85rem; color: var(--ink-soft); }
+.pdf-meta[hidden] { display: none; }
+
+.pdf-actions { flex: 0 0 auto; display: flex; gap: .4rem; }
+.pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 500;
+  color: var(--brand-deep);
+  background: var(--surface);
+  border: 1px solid var(--brand-tint-2);
+  border-radius: 999px;
+  padding: .42rem .8rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+.pdf-btn svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.pdf-btn[hidden] { display: none; }
+.pdf-btn:hover { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; }
+.pdf-btn:active { transform: scale(.97); }
+.pdf-btn-close { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; }
+.pdf-btn-close:hover { background: var(--brand-deeper); border-color: var(--brand-deeper); }
+
+/* One button, two icons: the "expand" corners going in, the "collapse"
+   corners coming back out. js/pdf-viewer.js flips .is-full from the
+   browser's own fullscreenchange event, so it stays right even when the
+   visitor leaves full screen with Escape or F11. */
+.pdf-btn-full .ico-exit { display: none; }
+.pdf-btn-full.is-full .ico-enter { display: none; }
+.pdf-btn-full.is-full .ico-exit { display: block; }
+.pdf-btn-full.is-full { background: var(--brand-deep); border-color: var(--brand-deep); color: #fff; }
+.pdf-btn-full.is-full:focus-visible { outline-color: var(--focus-on-dark); }
+
+/* Full screen: the panel is the whole display, so the inset margin,
+   rounded corners and border it wears as an overlay all come off.
+   :fullscreen and :-webkit-full-screen must stay in separate rules -
+   a selector list is dropped whole by any browser that doesn't know one
+   of its parts. */
+.pdf-panel:fullscreen { width: 100%; height: 100%; border: 0; border-radius: 0; }
+.pdf-panel:-webkit-full-screen { width: 100%; height: 100%; border: 0; border-radius: 0; }
+.pdf-panel::backdrop { background: #0e2c40; }
+/* On a blue-filled button the warm focus ring measures too low - switch
+   to the white ring the rest of the site uses on blue surfaces. */
+.pdf-btn-close:focus-visible { outline-color: var(--focus-on-dark); }
+
+.pdf-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;              /* lets the frame shrink inside the flex column */
+  background: #eef2f6;
+}
+.pdf-frame { width: 100%; height: 100%; border: 0; display: block; }
+.pdf-frame[hidden] { display: none; }
+
+.pdf-loading {
+  display: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: .95rem;
+  color: var(--ink-soft);
+}
+.pdf-stage.is-loading .pdf-loading { display: block; }
+
+.pdf-fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  gap: .6rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  background: var(--surface);
+}
+.pdf-fallback[hidden] { display: none; }
+.pdf-fallback h3 { font-size: 1.1rem; color: var(--brand-deep); }
+.pdf-fallback p { color: var(--ink-soft); max-width: 46ch; }
+
+/* Scroll lock: without it the page underneath scrolls away behind the
+   overlay on a trackpad or a phone. */
+html.pdf-viewer-open, html.pdf-viewer-open body { overflow: hidden; }
+
+/* Phone: full-bleed, with the buttons dropping onto their own row so the
+   document title keeps a readable width. */
+@media (max-width: 700px) {
+  .pdf-viewer { padding: 0; }
+  .pdf-panel { width: 100%; border: 0; border-radius: 0; }
+  .pdf-bar { flex-wrap: wrap; gap: .55rem; padding: .7rem .85rem; }
+  .pdf-titles { flex: 1 0 100%; }
+  .pdf-actions { flex: 1 0 100%; justify-content: flex-end; }
+  .pdf-btn { padding: .45rem .7rem; }
+}
+
+/* Small phone: four labelled pills no longer fit on one row, so the three
+   secondary ones go to icon-only. The label is *clipped*, not removed -
+   display:none would take it out of the accessibility tree with it and
+   leave three unnamed buttons. Close keeps its word: it is the way back. */
+@media (max-width: 480px) {
+  .pdf-btn-full .pdf-btn-label,
+  #pdf-download .pdf-btn-label,
+  #pdf-newtab .pdf-btn-label {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+    white-space: nowrap; border: 0;
+  }
+  .pdf-btn-full, #pdf-download, #pdf-newtab { padding: .45rem .55rem; }
+}
+
+@keyframes kc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* --- map --------------------------------------------------------------- */
 .map-frame {
   border: 1px solid var(--line);
@@ -582,7 +765,9 @@ a.partner-tile:hover, a.partner-tile:focus-visible {
 
 /* --- print ------------------------------------------------------------- */
 @media print {
-  .site-header, .site-nav, .nav-toggle, .jump, .skip-link { display: none !important; }
+  .site-header, .site-nav, .nav-toggle, .jump, .skip-link,
+  .pdf-viewer { display: none !important; }
+  html.pdf-viewer-open, html.pdf-viewer-open body { overflow: visible !important; }
   body { background: #fff; font-size: 11pt; }
   .card, .res-item, .contact-row { box-shadow: none; break-inside: avoid; }
   a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #444; word-break: break-all; }

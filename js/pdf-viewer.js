@@ -1,0 +1,360 @@
+/* In-page PDF viewer.
+
+   Every resource PDF is self-hosted under pdfs/ (see the README note on
+   HSE laptops blocking Drive), so it is same-origin and can be shown
+   inside the site rather than throwing the visitor out to a separate
+   browser tab. The rendering is done by the browser's own built-in PDF
+   reader in an <iframe> - no PDF library is loaded, which keeps the "no
+   build step, no bundled dependencies" promise the rest of the site keeps.
+
+   Progressive enhancement, same as js/nav.js: the links keep their plain
+   href and target="_blank" in the markup, so with JS off - or in a
+   browser with no built-in PDF reader - a visitor gets exactly the old
+   behaviour. Only an unmodified left-click on a same-origin .pdf is
+   intercepted, so Ctrl/Cmd-click and middle-click still open a real new
+   tab for anyone who wants one, and the viewer's own toolbar offers both
+   "new tab" and "download" as a permanent escape hatch. */
+(function () {
+  'use strict';
+
+  var viewer = null;      // built lazily, on the first open
+  var panel, stage, frame, fallback, titleEl, metaEl, downloadLink, newTabLink, closeBtn;
+  var fullBtn, fullLabel;
+  var lastFocused = null;
+  var pushedState = false;
+  var loadTimer = null;
+
+  /* The browser tells us outright whether it can render a PDF inline.
+     Where it says no, the iframe is skipped and the toolbar is shown with
+     a short explanation, rather than an empty grey box or a surprise
+     download. Older browsers leave the property undefined; those get the
+     iframe, and the toolbar's two escape hatches if it comes up blank. */
+  function canRenderInline() {
+    return typeof navigator.pdfViewerEnabled === 'boolean' ? navigator.pdfViewerEnabled : true;
+  }
+
+  /* Fullscreen API, with the -webkit- spellings Safari still needs. iOS
+     Safari on iPhone supports neither, and says so through
+     fullscreenEnabled - the button is hidden there rather than offered
+     and then failing. */
+  function fullscreenSupported() {
+    return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  }
+
+  function fullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function enterFullscreen(el) {
+    var request = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!request) return;
+    try {
+      var result = request.call(el);
+      if (result && result.catch) result.catch(function () { /* refused - the viewer just stays windowed */ });
+    } catch (e) { /* same */ }
+  }
+
+  function exitFullscreen() {
+    if (!fullscreenElement()) return;
+    var exit = document.exitFullscreen || document.webkitExitFullscreen;
+    if (!exit) return;
+    try {
+      var result = exit.call(document);
+      if (result && result.catch) result.catch(function () { });
+    } catch (e) { }
+  }
+
+  function isViewablePdf(link) {
+    if (!link || link.hasAttribute('data-no-viewer')) return false;
+    var url;
+    try { url = new URL(link.href, location.href); } catch (e) { return false; }
+    if (url.origin !== location.origin) return false;   // external PDFs still open normally
+    return /\.pdf$/i.test(url.pathname);
+  }
+
+  /* The visible name of a resource lives in .res-name with the "- PDF"
+     tag as a child span; strip the tag so the viewer heading reads
+     "Bedtime Routine", not "Bedtime Routine - PDF". */
+  function labelFor(link) {
+    var name = link.querySelector('.res-name');
+    var text;
+    if (name) {
+      var clone = name.cloneNode(true);
+      var tag = clone.querySelector('.tag');
+      if (tag) tag.parentNode.removeChild(tag);
+      text = clone.textContent;
+    } else {
+      text = link.textContent;
+    }
+    text = (text || '').replace(/\s+/g, ' ').trim();
+    return text || 'Document';
+  }
+
+  function metaFor(link) {
+    var meta = link.querySelector('.res-meta');
+    return meta ? meta.textContent.replace(/\s+/g, ' ').trim() : '';
+  }
+
+  function fileNameFor(link) {
+    var parts = link.pathname.split('/');
+    return decodeURIComponent(parts[parts.length - 1]) || 'document.pdf';
+  }
+
+  function build() {
+    viewer = document.createElement('div');
+    viewer.className = 'pdf-viewer';
+    viewer.hidden = true;
+
+    viewer.innerHTML =
+      '<div class="pdf-backdrop" data-pdf-close></div>' +
+      '<div class="pdf-panel" role="dialog" aria-modal="true" aria-labelledby="pdf-viewer-title">' +
+        '<div class="pdf-bar">' +
+          '<div class="pdf-titles">' +
+            '<h2 class="pdf-title" id="pdf-viewer-title">Document</h2>' +
+            '<p class="pdf-meta"></p>' +
+          '</div>' +
+          '<div class="pdf-actions">' +
+            '<button type="button" class="pdf-btn pdf-btn-full" id="pdf-fullscreen" aria-pressed="false" hidden>' +
+              '<svg class="ico-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/></svg>' +
+              '<svg class="ico-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3a2 2 0 0 0 2-2V3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/><path d="M8 21v-3a2 2 0 0 0-2-2H3"/></svg>' +
+              '<span class="pdf-btn-label">Full screen</span>' +
+            '</button>' +
+            '<a class="pdf-btn" id="pdf-download" href="#" download>' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>' +
+              '<span class="pdf-btn-label">Download</span>' +
+            '</a>' +
+            '<a class="pdf-btn" id="pdf-newtab" href="#" target="_blank" rel="noopener noreferrer">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>' +
+              '<span class="pdf-btn-label">New tab</span>' +
+            '</a>' +
+            '<button type="button" class="pdf-btn pdf-btn-close" data-pdf-close>' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
+              '<span>Close</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pdf-stage">' +
+          '<p class="pdf-loading" role="status">Loading the document&hellip;</p>' +
+          '<iframe class="pdf-frame" title="Document" src="about:blank"></iframe>' +
+          '<div class="pdf-fallback" hidden>' +
+            '<h3>This browser cannot show PDFs on the page</h3>' +
+            '<p>Use <strong>New tab</strong> or <strong>Download</strong> above to read this document.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(viewer);
+
+    panel = viewer.querySelector('.pdf-panel');
+    stage = viewer.querySelector('.pdf-stage');
+    frame = viewer.querySelector('.pdf-frame');
+    fallback = viewer.querySelector('.pdf-fallback');
+    titleEl = viewer.querySelector('.pdf-title');
+    metaEl = viewer.querySelector('.pdf-meta');
+    downloadLink = viewer.querySelector('#pdf-download');
+    newTabLink = viewer.querySelector('#pdf-newtab');
+    closeBtn = viewer.querySelector('.pdf-btn-close');
+    fullBtn = viewer.querySelector('.pdf-btn-full');
+    fullLabel = fullBtn.querySelector('.pdf-btn-label');
+
+    viewer.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('[data-pdf-close]')) close();
+    });
+
+    /* Full screen hands the whole display over to the document - useful on
+       a laptop for anything landscape or dense (the charts and diaries
+       especially). Only offered where the browser actually supports it. */
+    fullBtn.hidden = !fullscreenSupported();
+    fullBtn.addEventListener('click', function () {
+      if (fullscreenElement()) exitFullscreen();
+      else enterFullscreen(panel);
+    });
+
+    /* The browser can leave full screen on its own (Escape, F11, a window
+       change), so the button's state is synced from the event rather than
+       assumed from the click. */
+    var syncFullscreen = function () {
+      var on = fullscreenElement() === panel;
+      fullBtn.setAttribute('aria-pressed', String(on));
+      fullBtn.classList.toggle('is-full', on);
+      fullLabel.textContent = on ? 'Exit full screen' : 'Full screen';
+    };
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    document.addEventListener('webkitfullscreenchange', syncFullscreen);
+
+    /* Clears the loading line once the reader has the file. The timeout is
+       the same defensive backstop js/motion.js uses for its skeletons - a
+       missed load event must not leave "Loading..." on screen forever. */
+    frame.addEventListener('load', function () {
+      if (frame.getAttribute('src') !== 'about:blank') stage.classList.remove('is-loading');
+    });
+
+    /* Keyboard handling sits on the panel, with Escape also on the
+       document so it works while focus is on the backdrop. Neither can see
+       keys pressed *inside* the PDF iframe - that is a separate document
+       and its events never reach this one - which is why Close is a
+       permanently visible button and not a keyboard-only affordance. */
+    panel.addEventListener('keydown', function (e) {
+      /* In full screen, Escape belongs to the browser - it steps back out
+         to the windowed viewer rather than closing the document outright. */
+      if (e.key === 'Escape' && fullscreenElement()) return;
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key !== 'Tab') return;
+
+      var focusable = [];
+      var items = panel.querySelectorAll('a[href], button:not([disabled]), iframe');
+      Array.prototype.forEach.call(items, function (el) {
+        if (!el.hidden && (el.offsetWidth || el.offsetHeight || el === document.activeElement)) {
+          focusable.push(el);
+        }
+      });
+      if (!focusable.length) return;
+
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && isOpen() && !fullscreenElement()) { e.preventDefault(); close(); }
+    });
+
+    /* The phone/browser back button closes the viewer instead of leaving
+       the page, which is what a full-screen overlay looks like it should
+       do. The entry pushed on open is popped here, so the flag is cleared
+       before close() gets a chance to pop it a second time. */
+    window.addEventListener('popstate', function () {
+      if (isOpen()) {
+        pushedState = false;
+        close();
+      }
+    });
+  }
+
+  function isOpen() {
+    return !!viewer && !viewer.hidden;
+  }
+
+  /* Hides the rest of the page from screen readers and the tab order
+     while the viewer is up. `inert` does both in one attribute; browsers
+     without it still get the focus trap above. */
+  function setBackgroundInert(on) {
+    Array.prototype.forEach.call(document.body.children, function (el) {
+      if (el === viewer) return;
+      if (on) el.setAttribute('inert', '');
+      else el.removeAttribute('inert');
+    });
+  }
+
+  function open(link) {
+    if (!viewer) build();
+
+    var href = link.href;
+    var name = labelFor(link);
+    var meta = metaFor(link);
+
+    lastFocused = document.activeElement;
+
+    titleEl.textContent = name;
+    metaEl.textContent = meta;
+    metaEl.hidden = !meta;
+    downloadLink.href = href;
+    downloadLink.setAttribute('download', fileNameFor(link));
+    newTabLink.href = href;
+    frame.title = name + ' (PDF)';
+
+    var inline = canRenderInline();
+    fallback.hidden = inline;
+    frame.hidden = !inline;
+    stage.classList.toggle('is-loading', inline);
+
+    if (inline) {
+      /* #view=FitH asks the built-in reader to open fitted to the width of
+         the frame, which is the readable default on a phone. */
+      frame.src = href + '#view=FitH';
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(function () { stage.classList.remove('is-loading'); }, 8000);
+    }
+
+    viewer.hidden = false;
+    document.documentElement.classList.add('pdf-viewer-open');
+    setBackgroundInert(true);
+    closeBtn.focus();
+
+    if (window.history && history.pushState) {
+      try {
+        history.pushState({ kidscopePdfViewer: true }, '');
+        pushedState = true;
+      } catch (e) {
+        pushedState = false;
+      }
+    }
+  }
+
+  function close() {
+    if (!isOpen()) return;
+
+    clearTimeout(loadTimer);
+    exitFullscreen();                   // never leave the screen owned by a hidden panel
+    viewer.hidden = true;
+    frame.src = 'about:blank';          // releases the reader and its memory
+    stage.classList.remove('is-loading');
+    document.documentElement.classList.remove('pdf-viewer-open');
+    setBackgroundInert(false);
+
+    if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
+    lastFocused = null;
+
+    if (pushedState) {
+      pushedState = false;
+      history.back();                   // drop the entry pushed on open
+    }
+  }
+
+  /* Retitles the affordance on every link the viewer takes over: the icon
+     becomes an "open in place" mark instead of the external-link arrow,
+     and the screen-reader-only note stops promising a new tab. Done here
+     rather than in the HTML so the markup keeps telling the truth for a
+     visitor without JS. */
+  function decorate(link) {
+    var use = link.querySelector('.ext use');
+    if (use && document.getElementById('i-view')) {
+      use.setAttribute('href', '#i-view');
+    }
+    var note = link.querySelector('.visually-hidden');
+    if (note && /new tab/i.test(note.textContent)) {
+      note.textContent = '(opens in a viewer on this page)';
+    }
+    link.setAttribute('data-pdf-inline', '');
+  }
+
+  function init() {
+    Array.prototype.forEach.call(document.querySelectorAll('a[href]'), function (link) {
+      if (isViewablePdf(link)) decorate(link);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;   // let real new tabs happen
+      if (!e.target.closest) return;
+
+      var link = e.target.closest('a[href]');
+      if (!link || !isViewablePdf(link)) return;
+
+      e.preventDefault();
+      open(link);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

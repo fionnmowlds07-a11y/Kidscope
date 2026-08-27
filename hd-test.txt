@@ -1,0 +1,1 @@
+ls -la hd-test.txt 2>/dev/null && cat hd-test.txt && rm -f hd-test.txt

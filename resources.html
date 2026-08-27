@@ -16,10 +16,15 @@
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 
-<!-- External-link icon, referenced by every resource item below. -->
+<!-- External-link icon, referenced by every resource item below. #i-view
+     replaces it, via js/pdf-viewer.js, on the self-hosted PDFs that open in
+     the in-page viewer rather than in a new browser tab. -->
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
   <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+  </symbol>
+  <symbol id="i-view" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/>
   </symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="m6 9 6 6 6-6"/>
@@ -712,5 +717,6 @@
 <script src="js/nav.js"></script>
 <script src="js/site-search.js"></script>
 <script src="js/motion.js"></script>
+<script src="js/pdf-viewer.js"></script>
 </body>
 </html>
