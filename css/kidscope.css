@@ -208,6 +208,44 @@ a:hover { color: var(--brand-deeper); }
   border-left: 4px solid var(--brand-deep); padding-left: calc(.9rem - 4px);
 }
 
+/* --- primary nav (wide-viewport persistent bar) -------------------------
+   Duplicates the six links already inside .site-nav so a wide-viewport
+   visitor sees the full site IA without opening "Menu" first. The two
+   <nav aria-label="Main"> elements are mutually exclusive via display:none
+   at any given width, so only one is ever in the accessibility tree. */
+.primary-nav { display: none; grid-area: primarynav; }
+.primary-nav ul { display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem; }
+.primary-nav a {
+  display: inline-block;
+  padding: .55rem .65rem;
+  border-radius: var(--radius-sm);
+  font-size: .95rem; font-weight: 500;
+  color: var(--ink); text-decoration: none;
+}
+.primary-nav a:hover { background: var(--brand-tint); color: var(--brand-deep); }
+.primary-nav a[aria-current="page"] {
+  background: var(--brand-tint); color: var(--brand-deep); font-weight: 600;
+}
+
+/* 1080px, not 960px: six links at this padding need roughly 900px in a
+   row, and .wrap is 100% - 2.5rem below its 1120px cap - too tight a
+   margin at 960px, where the bar would wrap to two centered lines right
+   at its own on-ramp. */
+@media (min-width: 1080px) {
+  .header-inner {
+    grid-template-columns: auto minmax(200px, 1fr);
+    grid-template-areas: "brand search" "primarynav primarynav";
+    row-gap: 0;
+  }
+  .nav-details { display: none; }
+  .primary-nav {
+    display: block;
+    margin-top: .5rem;
+    padding-top: .3rem;
+    border-top: 1px solid var(--line);
+  }
+}
+
 /* --- hero -------------------------------------------------------------- */
 /* Photo of the Kidscope playroom, cropped (never stretched) via
    background-size: cover. The gradient sits on top at ~90% opacity so the
@@ -222,20 +260,17 @@ a:hover { color: var(--brand-deeper); }
   padding-block: clamp(3rem, 8vw, 5.5rem);
 }
 .hero-grid { display: grid; gap: 2.5rem; align-items: center; }
+/* Below 860px the grid stacks to one column; the photo is the one asset
+   doing emotional work, so it visually leads on the viewport parents are
+   most likely to open this page on. Reading/focus order is untouched -
+   `order` only changes paint order, and the photo has no focusable
+   content, so screen-reader and keyboard order still meet the heading
+   and lede first. */
+.hero-media { order: -1; }
 .hero h1 { color: #fff; max-width: 20ch; }
 .hero .lede { color: rgba(255,255,255,.92); max-width: 56ch; margin-top: 1.1rem; }
 .hero-consultant { margin-top: 1rem; font-size: 1rem; font-weight: 500; color: rgba(255,255,255,.9); }
 .hero-consultant strong { color: #fff; font-weight: 600; }
-
-/* Plain-text facts, dash-separated, rather than pill/badge shapes. */
-.hero-badges {
-  display: flex; flex-wrap: wrap;
-  row-gap: .5rem;
-  margin-top: 1.8rem;
-  font-size: .97rem; font-weight: 500;
-}
-.badge { color: #fff; }
-.hero-badges li + li::before { content: "\2003\2014\2003"; color: rgba(255,255,255,.6); }
 
 /* Photo alongside the hero copy, once there is room beside it. A thicker
    border plus a soft outward glow, layered on top of the normal drop
@@ -248,6 +283,7 @@ a:hover { color: var(--brand-deeper); }
 }
 @media (min-width: 860px) {
   .hero-grid { grid-template-columns: 1.15fr 1fr; }
+  .hero-media { order: 0; }
 }
 
 /* Inner page header - lighter than the home hero */
@@ -287,7 +323,15 @@ a:hover { color: var(--brand-deeper); }
 
 /* --- cards ------------------------------------------------------------- */
 .grid { display: grid; gap: 1.15rem; }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+/* Four "How can we help?" cards - an explicit 2-column track forces a
+   clean 2x2 at every width above the stack point. auto-fit/minmax was
+   tried here first but a 360px floor still fits 3 tracks inside the
+   1120px wrap on most desktop widths (1280/1366/1440/1920px), producing
+   an unbalanced 3-then-1 row - the opposite of what it was meant to do. */
+.help-grid { grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .help-grid { grid-template-columns: repeat(2, 1fr); }
+}
 .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 
 .card {
@@ -317,6 +361,14 @@ a.link-card .go::after { content: " \2192"; }
 @media (prefers-reduced-motion: reduce) {
   a.link-card, a.link-card:hover { transition: none; transform: none; }
 }
+
+/* The two most time-critical destinations (contact, referrals) get a
+   tinted card and an eyebrow label, so a parent who was just handed a
+   referral doesn't have to read all five destinations to find theirs. */
+a.link-card.card--primary { background: var(--brand-tint); border-color: var(--brand-tint-2); }
+a.link-card.card--primary:hover { border-color: var(--brand); }
+
+.grid-footnote { margin-top: 1.25rem; font-size: .95rem; color: var(--ink-soft); }
 
 /* --- aims list --------------------------------------------------------- */
 .aims { counter-reset: aim; display: grid; gap: 1rem; margin-top: 1.5rem; }
@@ -363,19 +415,6 @@ a.link-card .go::after { content: " \2192"; }
   padding: 1.4rem 1.6rem;
 }
 .callout h3 { color: var(--brand-deep); margin-bottom: .35rem; }
-
-/* The one emphasised warning in the brief - walk-ins are not accepted. */
-.notice {
-  border: 1px solid #e6c98f;
-  background: #fdf6e7;
-  border-left: 5px solid #b4530a;
-  border-radius: var(--radius-sm);
-  padding: 1.2rem 1.4rem;
-  display: flex; gap: .9rem; align-items: flex-start;
-}
-.notice svg { flex: 0 0 auto; width: 22px; height: 22px; color: #8a3f08; margin-top: .15rem; }
-.notice strong { color: #7a3806; }
-.notice p { color: #5c3410; }
 
 /* --- contact ----------------------------------------------------------- */
 .contact-rows { display: grid; gap: 1rem; margin-top: 1.5rem; }
@@ -902,5 +941,3 @@ html[data-a11y-font-step="3"] { font-size: 132%; }
   text-decoration: underline;
   text-decoration-thickness: .1em;
 }
-.a11y-contrast .notice { border-color: #000; background: #fff; }
-.a11y-contrast .notice strong, .a11y-contrast .notice p, .a11y-contrast .notice svg { color: #000; }

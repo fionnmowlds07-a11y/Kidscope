@@ -50,13 +50,13 @@ Do not use `--brand` for body-size text — that is the one rule that keeps the 
 
 ## Adding a self-hosted resource PDF
 
-HSE work laptops block Google Drive by category, so resource PDFs are hosted directly in this repo under `pdfs/<category>/` (currently `sleep/`, `toilet-training/`, `food-and-nutrition/`, `physiotherapy/`) and linked with a plain relative `href` — same origin as the rest of the site, so nothing gets caught by that filter. To add one:
+HSE work laptops block Google Drive by category, so resource PDFs are hosted directly in this repo under `pdfs/<category>/` (currently `sleep/`, `toilet-training/`, `food-and-nutrition/`, `physiotherapy/`, `other-information/`) and linked with a plain relative `href` — same origin as the rest of the site, so nothing gets caught by that filter. To add one:
 
 1. Drop the file into the right `pdfs/<category>/` folder (create a new subfolder for a new category), with a slugified filename (lowercase, hyphens, no spaces/`&`/accents).
 2. Add a `<li><a class="res-item" href="pdfs/<category>/<file>.pdf" ...>` entry in `resources.html`, copying the markup of an existing entry in that `.res-group` — same `target="_blank"`, `.tag`, and `res-meta` one-line description pattern.
 3. **Sleep, Toilet Training and Food and Nutrition are collapsed behind a dropdown** (`<details class="res-dropdown">`/`<summary class="res-toggle">`) since each holds a long list — add new `<li>` entries inside the existing `<ul class="res-list">` nested in that category's `<details>`, and update the resource count in the `<summary>` text (e.g. "Show all 15 resources").
 4. If it's a new top-level category, also add its anchor to the `.jump` nav (`resources.html`) and a matching entry to `SEARCH_INDEX` in `js/site-search.js`.
-5. This means updating a resource is now a commit + deploy, not a drag-and-drop into a Drive folder — there's no admin upload UI. One link still points to Google Drive (Hospital Admission guide) and should be migrated the same way when convenient.
+5. This means updating a resource is now a commit + deploy, not a drag-and-drop into a Drive folder — there's no admin upload UI. All resource PDFs are now self-hosted this way; none link to Google Drive any more.
 
 ## Adding publications
 
@@ -78,7 +78,7 @@ These need answers from the clinic — they were not guessed at.
 
 3. **The ISTI speech-therapist link** carries a saved filter (`wpv_view_count=2033`) that may not keep working on their site. Worth checking, and possibly linking their plain search page instead.
 
-4. **Google Drive links** — HSE work laptops block Google Drive outright (their filtering software blocks the domain by category), so the Toileting, Sleep, Food & Nutrition folders and the Learn to Move handouts have been self-hosted as PDFs under `pdfs/` instead of linking to Drive. One link still points to Google Drive — the **Hospital Admission guide** — and will hit the same HSE block; migrate it the same way once that file is on hand.
+4. ~~**Google Drive links.**~~ **Resolved** — HSE work laptops block Google Drive outright (their filtering software blocks the domain by category), so all five original Drive links (Toileting, Sleep, Food & Nutrition, Learn to Move handouts, Hospital Admission guide) have been self-hosted as PDFs under `pdfs/` instead. None link to Google Drive any more.
 
 5. ~~**Better logo files would improve the site.**~~ **Resolved** — the client supplied a transparent Kidscope logo and the six partner logos as separate files; the partner grid is now individually linked to HSE, UCC, Let's Grow Together, Tomar Trust and NICHE Health Project. **Springboard's official URL is still needed** — its tile ships unlinked until that's confirmed (see `.partner-tile--unlinked` in `css/kidscope.css`).
 

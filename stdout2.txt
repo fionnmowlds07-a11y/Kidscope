@@ -1,0 +1,43 @@
+[
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\Fionn\\Documents\\GitHub\\Kidscope\\css\\kidscope.css",
+    "line": 208,
+    "snippet": "border-left: 4px solid var(--brand-deep)"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\Fionn\\Documents\\GitHub\\Kidscope\\css\\kidscope.css",
+    "line": 328,
+    "snippet": "border-left: 5px solid var(--brand)"
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\Fionn\\Documents\\GitHub\\Kidscope\\css\\kidscope.css",
+    "line": 371,
+    "snippet": "border-left: 5px solid #b4530a"
+  },
+  {
+    "antipattern": "em-dash-overuse",
+    "name": "Em-dash overuse",
+    "description": "Em-dash saturation in body copy is an AI cadence tell. Advisory only: humans use em-dashes legitimately, so this fires only on saturation — at least 8 em-dashes (— or --) at a density near one per 500 characters of body text — never on a long article that uses a few. Prefer commas, colons, periods, or parentheses.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\Fionn\\Documents\\GitHub\\Kidscope\\resources.html",
+    "line": 0,
+    "snippet": "42 em-dashes in body text",
+    "advisory": true
+  }
+]
