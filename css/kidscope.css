@@ -635,6 +635,55 @@ a.res-item .ext { flex: 0 0 auto; width: 16px; height: 16px; color: var(--ink-so
 }
 .pdf-stage.is-loading .pdf-loading { display: block; }
 
+/* The pdf.js column (phones). One page per row, each reserving its true
+   height from the start so the list never jumps while pages draw. */
+.pdf-pages {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;         /* don't chain the scroll to the page behind */
+  /* Flex, not grid: an auto-sized grid row measures its item's *content*,
+     and an unrendered canvas measures nothing - which stacked every page
+     into a 17px row on top of the one before it. A flex column resolves
+     each page's height from its width and aspect-ratio, and
+     js/pdf-viewer.js pins the same height in pixels for browsers that
+     don't do aspect-ratio at all. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .7rem;
+  padding: .7rem;
+}
+.pdf-page {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 900px;
+  background: var(--surface);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.pdf-page canvas { width: 100%; height: 100%; display: block; }
+/* Same shimmer the partner logos and the map use, for the same reason:
+   something is genuinely on its way. */
+.pdf-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, var(--brand-tint) 30%, var(--brand-tint-2) 50%, var(--brand-tint) 70%);
+  background-size: 300% 100%;
+  animation: kc-shimmer 1.4s ease-in-out infinite;
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.pdf-page.is-rendered::after { opacity: 0; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .pdf-page::after { animation: none; background: var(--brand-tint); }
+}
+
 .pdf-fallback {
   position: absolute;
   inset: 0;
@@ -1037,6 +1086,32 @@ html.a11y-reduce-motion *::after {
   padding-top: .8rem; cursor: pointer; text-align: center;
 }
 .a11y-reset:hover { color: var(--brand-deep); }
+
+/* --- read this page aloud (toolbar control) -------------------------------
+   The Stop button and status line only appear once reading has started
+   (js/accessibility.js toggles [hidden] and fills the status text), so a
+   visitor who never touches "Listen" sees nothing extra here. */
+.a11y-btn--speak svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--brand-deep); }
+.a11y-btn--stop {
+  color: var(--focus); border-color: var(--focus);
+}
+.a11y-btn--stop svg { width: 16px; height: 16px; flex: 0 0 auto; }
+.a11y-btn--stop:hover { background: #fdf1e8; }
+.a11y-speak-status {
+  margin: .5rem 0 0; font-size: .82rem; color: var(--ink-soft);
+  min-height: 1.1em;
+}
+
+/* Marks the sentence currently being read aloud. Outline rather than a
+   background wash, so it reads clearly under both .a11y-contrast (which
+   turns most colour into black-on-white) and .a11y-colorblind. */
+.a11y-speaking {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+  background: var(--brand-tint);
+}
+:root.a11y-contrast .a11y-speaking { background: #ffe9a8; }
 
 /* --- dyslexia-friendly typeface (toolbar toggle) -------------------------
    OpenDyslexic, served from Fontsource's jsDelivr CDN (no build step, same

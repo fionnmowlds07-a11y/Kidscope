@@ -4,8 +4,9 @@
     {
       "name": "kidscope",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "--listen", "4321", "."],
-      "port": 4321
+      "runtimeArgs": ["--yes", "serve", "."],
+      "port": 4321,
+      "autoPort": true
     }
   ]
 }

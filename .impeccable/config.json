@@ -2,6 +2,25 @@
   "detector": {
     "ignoreRules": [],
     "ignoreFiles": [],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": ".site-nav a[aria-current=\"page\"]",
+        "files": [
+          "css/kidscope.css"
+        ],
+        "createdAt": "2026-08-27T18:56:07.895Z",
+        "reason": "pre-existing site design predating this session (current-page nav indicator), unrelated to PDF viewer work"
+      },
+      {
+        "rule": "side-tab",
+        "value": ".aims li",
+        "files": [
+          "css/kidscope.css"
+        ],
+        "createdAt": "2026-08-27T18:56:09.089Z",
+        "reason": "pre-existing site design predating this session (numbered aims-list accent), unrelated to PDF viewer work"
+      }
+    ]
   }
 }
