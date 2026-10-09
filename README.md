@@ -10,8 +10,12 @@ Static site (plain HTML/CSS/JS, no build step). Deploys as-is to Vercel, Netlify
 | `what-we-do.html` | What we do |
 | `research.html` | Research and publications |
 | `contact.html` | Contact us |
-| `referrals.html` | Being referred to Kidscope |
-| `resources.html` | Resources for families |
+| `referrals.html` | Being referred to Kidscope (incl. "What to expect at the clinic") |
+| `vaccinations.html` | Vaccinations |
+| `family-resources.html` | Resources for families |
+| `resources.html` | Resources for health professionals (was "Resources for families" until Oct 2026; URL kept) |
+
+The wide-screen nav bar uses shortened labels ("Research", "Being referred", "Health professionals") so all eight links fit on one line at 1080px; the Menu dropdown and footer use the full names.
 
 Shared: `css/kidscope.css`, `js/nav.js`, `js/accessibility.js`, `js/motion.js`, `img/`.
 
@@ -52,21 +56,28 @@ Do not use `--brand` for body-size text — that is the one rule that keeps the 
 
 ## Adding a self-hosted resource PDF
 
-HSE work laptops block Google Drive by category, so resource PDFs are hosted directly in this repo under `pdfs/<category>/` (currently `sleep/`, `toilet-training/`, `food-and-nutrition/`, `physiotherapy/`, `other-information/`) and linked with a plain relative `href` — same origin as the rest of the site, so nothing gets caught by that filter. To add one:
+HSE work laptops block Google Drive by category, so resource PDFs are hosted directly in this repo under `pdfs/<category>/` (currently `sleep/`, `toilet-training/`, `food-and-nutrition/`, `physiotherapy/`, `other-information/` for the health professionals page, `family-resources/` for the families page, and `research/` for self-hosted publications) and linked with a plain relative `href` — same origin as the rest of the site, so nothing gets caught by that filter. To add one:
 
 1. Drop the file into the right `pdfs/<category>/` folder (create a new subfolder for a new category), with a slugified filename (lowercase, hyphens, no spaces/`&`/accents).
-2. Add a `<li><a class="res-item" href="pdfs/<category>/<file>.pdf" ...>` entry in `resources.html`, copying the markup of an existing entry in that `.res-group` — same `target="_blank"`, `.tag`, and `res-meta` one-line description pattern.
+2. Add a `<li><a class="res-item" href="pdfs/<category>/<file>.pdf" ...>` entry in `resources.html` or `family-resources.html`, copying the markup of an existing entry in that `.res-group` — same `target="_blank"`, `.tag`, and `res-meta` one-line description pattern.
 3. **Sleep, Toilet Training and Food and Nutrition are collapsed behind a dropdown** (`<details class="res-dropdown">`/`<summary class="res-toggle">`) since each holds a long list — add new `<li>` entries inside the existing `<ul class="res-list">` nested in that category's `<details>`, and update the resource count in the `<summary>` text (e.g. "Show all 15 resources").
 4. If it's a new top-level category, also add its anchor to the `.jump` nav (`resources.html`) and a matching entry to `SEARCH_INDEX` in `js/site-search.js`.
 5. This means updating a resource is now a commit + deploy, not a drag-and-drop into a Drive folder — there's no admin upload UI. All resource PDFs are now self-hosted this way; none link to Google Drive any more.
 
 ## Adding publications
 
-`research.html` is deliberately empty — no placeholder entries were invented. When the list arrives from Emma and Lynn:
+`research.html` lists publications as `.res-item` links, same markup as the resources pages. Self-hosted PDFs (e.g. posters) go in `pdfs/research/` and open in the in-page viewer. Two entries are still waiting on a link or file and are marked with `TODO` comments in the HTML.
 
-1. Delete the `<div class="empty-state">` block.
-2. Uncomment the `<ul class="res-list">` template directly beneath it.
-3. Add one `<li>` per publication, following the commented pattern.
+## Still waiting on from the Kidscope team (Oct 2026 update)
+
+Marked with `TODO` comments in the HTML:
+
+- **Clonidine leaflet** (`family-resources.html`, Sleep). The file sent as the clonidine leaflet is the magnesium leaflet; its internal PDF title even says "Clonidine Leaflet".
+- **SLT top tips for early communication** PDF (`family-resources.html`, Speech and Language).
+- **The Food Pyramid Overview poster for parents** PDF (`family-resources.html`, Diet).
+- **Vaccine safety leaflet** (`vaccinations.html`).
+- **Kidscope Poster for HSE Conference 2025** and **Kidscope Newsletter 2025** (`research.html`).
+- **3–4 child-friendly pictures** for the Vaccinations, Being referred and governance (Dr Gibson) sections, plus optionally a photo of Dr Gibson.
 
 ---
 
@@ -76,7 +87,7 @@ These need answers from the clinic — they were not guessed at.
 
 1. **The "Who is involved" text ends mid-sentence.** The brief finishes with *"…delivers the clinic every Thursday during the academic year, with the inter-disciplinary team"*. It is currently published cut at the last complete clause (ending at "academic year"). Please send the full ending. See the HTML comment in `what-we-do.html`.
 
-2. **Research and publications is empty**, per your note that these were still being gathered.
+2. ~~**Research and publications is empty.**~~ **Resolved**: publications added Oct 2026 (two still to come, see above).
 
 3. **The ISTI speech-therapist link** carries a saved filter (`wpv_view_count=2033`) that may not keep working on their site. Worth checking, and possibly linking their plain search page instead.
 

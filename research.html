@@ -16,6 +16,21 @@
 <body>
 <a class="skip-link" href="#main">Skip to main content</a>
 
+<!-- External-link icon, referenced by every resource item below. #i-view
+     replaces it, via js/pdf-viewer.js, on the self-hosted PDFs that open in
+     the in-page viewer rather than in a new browser tab. -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/>
+  </symbol>
+  <symbol id="i-view" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 16v3a2 2 0 0 1-2 2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+  </symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m6 9 6 6 6-6"/>
+  </symbol>
+</svg>
+
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand-link" href="index.html" aria-label="Kidscope Paediatric Clinic, home">
@@ -41,7 +56,9 @@
           <li><a href="research.html" aria-current="page">Research and publications</a></li>
           <li><a href="contact.html">Contact us</a></li>
           <li><a href="referrals.html">Being referred to Kidscope</a></li>
-          <li><a href="resources.html">Resources for families</a></li>
+          <li><a href="vaccinations.html">Vaccinations</a></li>
+          <li><a href="family-resources.html">Resources for families</a></li>
+          <li><a href="resources.html">Resources for health professionals</a></li>
         </ul>
       </nav>
     </details>
@@ -50,10 +67,12 @@
       <ul>
         <li><a href="index.html">Home</a></li>
         <li><a href="what-we-do.html">What we do</a></li>
-        <li><a href="research.html" aria-current="page">Research and publications</a></li>
+        <li><a href="research.html" aria-current="page">Research</a></li>
         <li><a href="contact.html">Contact us</a></li>
-        <li><a href="referrals.html">Being referred to Kidscope</a></li>
-        <li><a href="resources.html">Resources for families</a></li>
+        <li><a href="referrals.html">Being referred</a></li>
+        <li><a href="vaccinations.html">Vaccinations</a></li>
+        <li><a href="family-resources.html">Resources for families</a></li>
+        <li><a href="resources.html">Health professionals</a></li>
       </ul>
     </nav>
   </div>
@@ -72,41 +91,53 @@
   <section class="section">
     <div class="wrap">
 
-      <!-- ==================================================================
-           PUBLICATIONS LIST GOES HERE.
-
-           The Kidscope team has not supplied publications yet. Nothing is
-           listed on purpose - no placeholder or example entries.
-
-           When the list arrives, delete the .empty-state block below and
-           uncomment the .res-list markup underneath it. Each entry follows
-           the same pattern; add one <li> per publication.
-           ================================================================== -->
-
-      <div class="empty-state prose">
-        <div class="ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-          </svg>
-        </div>
-        <h2>Publications will be listed here</h2>
-        <p>This section is being compiled. Research and publications from the Kidscope team will be added to this page as they become available.</p>
-        <p>If you have a query about the clinic in the meantime, please see our <a href="contact.html">contact details</a>.</p>
-      </div>
-
-      <!--
+      <h2 class="rule-head">Publications</h2>
       <ul class="res-list">
         <li>
-          <a class="res-item" href="PUBLICATION_URL" target="_blank" rel="noopener noreferrer">
+          <a class="res-item" href="https://cora.ucc.ie/items/6d6ee5ce-b22a-4b23-8c5c-7b7f9f2b1d84" target="_blank" rel="noopener noreferrer">
             <span class="res-txt">
-              <span class="res-name">Title of the publication</span>
-              <span class="res-meta">Authors &middot; Journal &middot; Year</span>
+              <span class="res-name">The KidScope Study: An analysis of a community paediatric clinic set in a disadvantaged area of Ireland</span>
+              <span class="res-meta">Buckley, Gibson, Harford, Cornally &amp; Curtin &middot; The Boolean (UCC) &middot; 2022</span>
             </span>
-            <svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+            <svg class="ext" aria-hidden="true"><use href="#i-ext"/></svg>
+            <span class="visually-hidden">(opens in a new tab)</span>
+          </a>
+        </li>
+        <li>
+          <a class="res-item" href="https://research.ucc.ie/en/publications/parent-perspectives-of-engaging-with-a-community-paediatric-clini/" target="_blank" rel="noopener noreferrer">
+            <span class="res-txt">
+              <span class="res-name">Parent perspectives of engaging with a community paediatric clinic with linked child development supports in a disadvantaged area of Ireland</span>
+              <span class="res-meta">Buckley, Harford, Gibson, Cornally &amp; Curtin &middot; Journal of Child Health Care &middot; 2025</span>
+            </span>
+            <svg class="ext" aria-hidden="true"><use href="#i-ext"/></svg>
+            <span class="visually-hidden">(opens in a new tab)</span>
+          </a>
+        </li>
+        <li>
+          <a class="res-item" href="https://research.ucc.ie/en/publications/examining-the-implementation-of-a-community-paediatric-clinic-in/" target="_blank" rel="noopener noreferrer">
+            <span class="res-txt">
+              <span class="res-name">Examining the implementation of a community paediatric clinic in a socially disadvantaged Irish community: A retrospective process evaluation</span>
+              <span class="res-meta">Buckley, Gibson, Harford, Cornally &amp; Curtin &middot; PLOS ONE &middot; 2024</span>
+            </span>
+            <svg class="ext" aria-hidden="true"><use href="#i-ext"/></svg>
+            <span class="visually-hidden">(opens in a new tab)</span>
+          </a>
+        </li>
+        <!-- TODO: "Kidscope Paediatric Clinic: An Integrated Model of Care, Improving
+             Outcomes for Children in Disadvantaged Communities" (Kidscope Poster for
+             HSE Conference 2025.pdf) - waiting on the link or file. -->
+        <!-- TODO: "Kidscope Newsletter 2025" - waiting on the link or file. -->
+        <li>
+          <a class="res-item" href="pdfs/research/kidscope-integrated-care-poster.pdf" target="_blank" rel="noopener noreferrer">
+            <span class="res-txt">
+              <span class="res-name">Integrated Community Paediatric Care in a Disadvantaged Setting: A Retrospective Review of the Kidscope Clinic Integrated Care Model <span class="tag">&mdash; PDF</span></span>
+              <span class="res-meta">Hegarty, Gibson, Bailey, Devlin <em>et al.</em> &middot; Poster</span>
+            </span>
+            <svg class="ext" aria-hidden="true"><use href="#i-ext"/></svg>
+            <span class="visually-hidden">(opens in a new tab)</span>
           </a>
         </li>
       </ul>
-      -->
 
     </div>
   </section>
@@ -126,7 +157,9 @@
         <li><a href="research.html">Research and publications</a></li>
         <li><a href="contact.html">Contact us</a></li>
         <li><a href="referrals.html">Being referred to Kidscope</a></li>
-        <li><a href="resources.html">Resources for families</a></li>
+        <li><a href="vaccinations.html">Vaccinations</a></li>
+        <li><a href="family-resources.html">Resources for families</a></li>
+        <li><a href="resources.html">Resources for health professionals</a></li>
       </ul>
     </div>
     <div>
@@ -155,5 +188,6 @@
 <script src="js/nav.js"></script>
 <script src="js/site-search.js"></script>
 <script src="js/motion.js"></script>
+<script src="js/pdf-viewer.js"></script>
 </body>
 </html>
