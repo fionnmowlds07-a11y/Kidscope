@@ -833,9 +833,6 @@ a.partner-tile:hover, a.partner-tile:focus-visible {
   transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color: var(--brand);
 }
 .partner-tile img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
-/* Springboard has no confirmed URL yet, so it ships as a plain, non-clickable
-   tile - deliberately no hover affordance, so it doesn't look like a broken link. */
-.partner-tile--unlinked { cursor: default; }
 .partner-names { font-size: .92rem; color: var(--ink-soft); margin-top: 1.1rem; }
 @media (prefers-reduced-motion: reduce) { a.partner-tile, a.partner-tile:hover { transition: none; transform: none; } }
 
